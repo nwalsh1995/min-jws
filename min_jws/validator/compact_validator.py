@@ -1,19 +1,6 @@
 import json
-from min_jws.custom_types import JSON
-from min_jws.utils import custom_urlsafe_b64encode, custom_urlsafe_b64decode, custom_dumps
-from min_jws.validator.jose_validator import JOSEValidatorFn
-
-def b64_utf8(value: JSON) -> bytes:
-    """
-    >>> b64_utf8({"typ": "JWT", "alg": "HS256"})  # Header
-    b'eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9'
-    >>> b64_utf8({"iss": "joe", "exp": 1300819380, "http://example.com/is_root": True})  # Payl
-oad
-    b'eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0c
-nVlfQ'
-    """
-    return custom_urlsafe_b64encode(custom_dumps(value).encode("utf-8"))
-
+from min_jws.custom_types import JSON, JOSEValidatorFn
+from min_jws.utils import custom_urlsafe_b64encode, custom_urlsafe_b64decode, custom_dumps, b64_utf8
 
 
 def generate_signature(alg_fn, protected_header: JSON, payload: bytes) -> bytes:

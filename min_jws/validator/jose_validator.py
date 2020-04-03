@@ -1,16 +1,9 @@
-from min_jws.custom_types import JSON
+from min_jws.custom_types import JSON, JOSEHeader, AlgValidatorFn
 from typing import Callable, NewType, Optional
 
-JOSEHeader = NewType("JOSEHeader", dict)
 JWSPayload = NewType("JWSPayload", str)
-JWSSigningInput = NewType("JWSSigningInput", bytes)
-JWSSignature = NewType("JWSSignature", bytes)
-
-AlgComputeFn = Callable[[JWSSigningInput], JWSSignature] 
-AlgValidatorFn = Callable[[JOSEHeader], AlgComputeFn]
 CritValidateFn = Callable[[JOSEHeader], None]
 CustomValidatorFn = Callable[[JOSEHeader], None]
-JOSEValidatorFn = Callable[[JOSEHeader], AlgComputeFn]
 
 
 def validate_jose_header(jose_header: JOSEHeader, alg_validator: AlgValidatorFn, crit_validator: CritValidateFn, custom_validator: Optional[CustomValidatorFn] = None) -> Callable:

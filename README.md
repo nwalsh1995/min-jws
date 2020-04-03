@@ -2,7 +2,9 @@
 an attempt at minimally fulfilling the requirements of RFC 7515 while maintaining extensibility for client programs.
 
 # requirements
-the following functionality must be passed in from clients using this library:
+the following functionality must be passed in from clients using this library.
+
+## Consuming
 
 	* the full jws as `bytes`
 	* a callable that validates the JOSE header according to your requirements
@@ -10,6 +12,11 @@ the following functionality must be passed in from clients using this library:
 		* should handle the `crit` header
 		* should handle any extra logic you want to do on the header
 
+
+## Producing
+
+	* the payload as a dictionary
+	* a callable that takes the JOSE header and returns a callable to compute the signature (internally typed as `AlgComputeFn`)
 
 # helpers
 there exist some functions which can be partially implemented in order for ease-of-use. for instance, `min_jws.validator.jose_validator.validate_jose_header` contains a generic structure for validating the JOSE header. it allows you to pass in callables to specify how to handle `alg` header, how to handle `crit` header, and how to handle any custom logic on headers. `validate_jose_header` is a function that relies on other callables, so you can partially implement it and then pass it around later.
@@ -23,8 +30,10 @@ this package was developed with types in mind. in order to correctly integrate a
 
 ```python
 from typing import Callable
+from min_jws.producer.compact_producer import produce_compact
 from min_jws.validator.compact_validator import validate_compact
-from min_jws.validator.jose_validator import validate_jose_header, JOSEValidatorFn
+from min_jws.validator.jose_validator import validate_jose_header
+from min_jws.compact_types import JOSEValidatorFn, JOSEHeader
 import hmac
 import hashlib
 import functools
@@ -33,7 +42,7 @@ import functools
 # this is where we define which algorithms our app can use
 # min-jws expects a callable which can generate the jws signature
 # in this example, we only support HS256
-def alg_validate(jose_header) -> Callable[[bytes], bytes]:
+def alg_validate(jose_header: JOSEHeader) -> AlgComputeFn:
     alg = jose_header["alg"]  # guaranteed to exist by this point
 
     if alg != "HS256":
@@ -46,6 +55,19 @@ xbf\xd3\xfbZ\x92\xd2\x06G\xef\x96\x8a\xb4\xc3wb="=.!r\x05.O\x08\xc0\xcd\x9a\xf5g
 	# return the callable that can generate a signature for this alg
     return lambda msg: hmac.digest(key=key, msg=msg, digest=hashlib.sha256)
 
+# producing
+
+jws = produce_compact(
+    payload={"iss":"joe", "exp":1300819380,"http://example.com/is_root":True},
+    jose_header={"typ":"JWT", "alg":"HS256"},
+    alg_validator=alg_validate,
+)
+assert jws == b"eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MT
+kzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ.dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWF
+OEjXk"
+
+
+# consuming
 
 # bind our validator functions to `validate_jose_header`
 jose_validate_fn: JOSEValidatorFn = functools.partial(validate_jose_header, alg_validator=alg_validate, crit_validator=lambda *args, **kwargs: None)
