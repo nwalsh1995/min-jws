@@ -5,7 +5,6 @@ from min_jws.utils import custom_urlsafe_b64encode, custom_urlsafe_b64decode, cu
 
 def generate_signature(alg_fn, protected_header: JSON, payload: bytes) -> bytes:
     return alg_fn(msg=b".".join((b64_utf8(protected_header), custom_urlsafe_b64encode(payload))))
-    
 
 
 def validate_compact(jws: bytes, validate_jose_header: JOSEValidatorFn):
@@ -18,8 +17,8 @@ def validate_compact(jws: bytes, validate_jose_header: JOSEValidatorFn):
         # 5.2.2, 5.2.6, 5.2.7
         protected_header_bytes, payload_bytes, signature_bytes = (custom_urlsafe_b64decode(p) for p in parts)
     except Exception:
-        raise ValueError("bad") 
-    
+        raise ValueError("bad")
+
     try:
         # 5.2.3
         protected_header = json.loads(protected_header_bytes)
@@ -28,7 +27,7 @@ def validate_compact(jws: bytes, validate_jose_header: JOSEValidatorFn):
 
     # 5.2.4
     jose_header = protected_header
-    
+
     # 5.2.5
     alg_fn = validate_jose_header(jose_header)
 

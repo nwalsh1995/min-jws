@@ -15,7 +15,6 @@ nVlfQ'
     return custom_urlsafe_b64encode(custom_dumps(value).encode("utf-8"))
 
 
-
 def custom_urlsafe_b64encode(value: bytes) -> bytes:
     """Remove padding to be same as RFC 7515."""
     return base64.urlsafe_b64encode(value).strip(b"=")
