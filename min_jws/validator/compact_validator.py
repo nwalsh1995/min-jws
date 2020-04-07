@@ -1,13 +1,9 @@
 import json
-from min_jws.custom_types import JSON, JOSEValidatorFn
-from min_jws.utils import custom_urlsafe_b64encode, custom_urlsafe_b64decode, custom_dumps, b64_utf8
+from min_jws.custom_types import JOSEValidatorFn
+from min_jws.utils import custom_urlsafe_b64encode, custom_urlsafe_b64decode, b64_utf8, gen_signing_input_bytes
 
 
-def generate_signature(alg_fn, protected_header: JSON, payload: bytes) -> bytes:
-    return alg_fn(msg=b".".join((b64_utf8(protected_header), custom_urlsafe_b64encode(payload))))
-
-
-def validate_compact(jws: bytes, validate_jose_header: JOSEValidatorFn):
+def validate_compact(jws: bytes, validate_jose_header: JOSEValidatorFn) -> None:
     parts = jws.split(b".")
     if len(parts) != 3:
         raise ValueError("invalid compact jws")
@@ -30,8 +26,9 @@ def validate_compact(jws: bytes, validate_jose_header: JOSEValidatorFn):
 
     # 5.2.5
     alg_fn = validate_jose_header(jose_header)
+    signing_input = gen_signing_input_bytes(header=b64_utf8(jose_header), payload=custom_urlsafe_b64encode(payload_bytes))
 
     # 5.2.8
-    signature = custom_urlsafe_b64encode(generate_signature(alg_fn, protected_header, payload_bytes))
+    signature = custom_urlsafe_b64encode(alg_fn(signing_input))
     if parts[2] != signature:
         raise ValueError("signatures dont match")

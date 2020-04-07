@@ -1,4 +1,4 @@
-from min_jws.custom_types import JSON, JOSEHeader, AlgValidatorFn
+from min_jws.custom_types import JOSEHeader, AlgValidatorFn, AlgComputeFn
 from typing import Callable, NewType, Optional
 
 JWSPayload = NewType("JWSPayload", str)
@@ -8,7 +8,7 @@ CustomValidatorFn = Callable[[JOSEHeader], None]
 
 def validate_jose_header(
     jose_header: JOSEHeader, alg_validator: AlgValidatorFn, crit_validator: CritValidateFn, custom_validator: Optional[CustomValidatorFn] = None
-) -> Callable:
+) -> AlgComputeFn:
     if "alg" not in jose_header:
         raise ValueError("alg is required")
 
