@@ -1,3 +1,5 @@
+![Code Quality](https://github.com/nwalsh1995/min-jws/workflows/Code%20Quality/badge.svg)
+
 # min-jws
 an attempt at minimally fulfilling the requirements of RFC 7515 while maintaining extensibility for client programs.
 
