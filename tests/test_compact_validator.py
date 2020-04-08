@@ -3,6 +3,7 @@ from min_jws.validator.jose_validator import validate_jose_header
 from min_jws.producer.compact_producer import produce_compact
 from min_jws.custom_types import JOSEValidatorFn, JOSEHeader, AlgComputeFn, JWSSignature, JWSPayload
 import hmac
+import hashlib
 import functools
 
 EXPECTED = b"""eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ.dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"""  # noqa: E501
@@ -16,14 +17,14 @@ def alg_validate(jose_header: JOSEHeader) -> AlgComputeFn:
     if alg != "HS256":
         raise ValueError(f"{alg} not supported")
 
-    return lambda msg: JWSSignature(hmac.digest(key=KEY, msg=msg, digest="sha256"))
+    return lambda msg: JWSSignature(hmac.new(key=KEY, msg=msg, digestmod=hashlib.sha256).digest())
 
 
 def test_produce_compact() -> None:
     jws = produce_compact(
         payload=JWSPayload({"iss": "joe", "exp": 1300819380, "http://example.com/is_root": True}),
         jose_header=JOSEHeader({"typ": "JWT", "alg": "HS256"}),
-        alg_validator=alg_validate,
+        alg_validator=alg_validate
     )
     assert jws == EXPECTED
 
