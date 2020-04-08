@@ -40,9 +40,7 @@ def test_produce_compact_invalid() -> None:
 def test_validate_compact() -> None:
     jose_validate_fn: JOSEValidatorFn = functools.partial(validate_jose_header, alg_validator=alg_validate, crit_validator=lambda *args, **kwargs: None)
 
-    validate_compact(
-        EXPECTED, jose_validate_fn,
-    )
+    assert b'{"iss":"joe",\r\n "exp":1300819380,\r\n "http://example.com/is_root":true}' == (validate_compact(EXPECTED, jose_validate_fn))
 
 
 def test_validate_compact_invalid() -> None:
