@@ -13,13 +13,13 @@ def validate_compact(jws: bytes, validate_jose_header: JOSEValidatorFn) -> None:
         # 5.2.2, 5.2.6, 5.2.7
         protected_header_bytes, payload_bytes, signature_bytes = (custom_urlsafe_b64decode(p) for p in parts)
     except Exception:
-        raise ValueError("bad")
+        raise ValueError("cannot b64decode")
 
     try:
         # 5.2.3
         protected_header = json.loads(protected_header_bytes)
     except Exception:
-        raise ValueError("bad")
+        raise ValueError("cannot load protected header as JSON")
 
     # 5.2.4
     jose_header = protected_header
