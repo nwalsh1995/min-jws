@@ -8,10 +8,11 @@ def validate_compact(jws: bytes, validate_jose_header: JOSEValidatorFn) -> JWSPa
     if len(parts) != 3:
         raise ValueError("invalid compact jws")
 
+    encoded_payload_bytes = parts[1]
     try:
         # todo: line breaks?
         # 5.2.2, 5.2.6, 5.2.7
-        protected_header_bytes, payload_bytes, signature_bytes = (custom_urlsafe_b64decode(p) for p in parts)
+        protected_header_bytes = custom_urlsafe_b64decode(parts[0])
     except Exception:
         raise ValueError("cannot b64decode")
 
@@ -26,11 +27,11 @@ def validate_compact(jws: bytes, validate_jose_header: JOSEValidatorFn) -> JWSPa
 
     # 5.2.5
     alg_fn = validate_jose_header(jose_header)
-    signing_input = gen_signing_input_bytes(header=b64_utf8(jose_header), payload=custom_urlsafe_b64encode(payload_bytes))
+    signing_input = gen_signing_input_bytes(header=b64_utf8(jose_header), payload=encoded_payload_bytes)
 
     # 5.2.8
     signature = custom_urlsafe_b64encode(alg_fn(signing_input))
     if parts[2] != signature:
         raise ValueError("signatures dont match")
 
-    return JWSPayloadBytes(payload_bytes)
+    return JWSPayloadBytes(custom_urlsafe_b64decode(encoded_payload_bytes))
